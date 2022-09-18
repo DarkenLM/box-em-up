@@ -1,0 +1,90 @@
+version: 2.1
+
+orbs:
+  #coveralls: coveralls/coveralls@1.0.5
+  coveralls: solven/coveralls@0.0.1
+
+commands:
+  test-nodejs:
+    steps:
+      # Use BASH instead of DASH! see: https://ubuntuforums.org/showthread.php?t=1932504
+      # - run: su apt-get install -y sudo # https://discuss.circleci.com/t/sudo-command-not-found/14208/4
+      # - run: ls -al /bin/sh && sudo rm /bin/sh && sudo ln -s /bin/bash /bin/sh && ls -al /bin/sh
+      - run:
+          name: Versions
+          command: npm version
+      - checkout
+      - restore_cache:
+          keys:
+            - v{{ .Environment.CIRCLE_CACHE_VERSION }}-{{ arch }}-npm-cache-{{ .Branch }}-{{ .Environment.CIRCLE_JOB }}
+            - v{{ .Environment.CIRCLE_CACHE_VERSION }}-{{ arch }}-npm-cache-master-{{ .Environment.CIRCLE_JOB }}
+      - run:
+          name: Install dependencies
+          command: npm ci
+      - save-npm-cache
+      - run:
+          name: Tests
+          command: npm run cover:check
+      - run:
+          name: Run coveralls
+          command: npm run coveralls
+      #- coveralls/upload
+      - store_artifacts: # special step to save test results as as artifact
+          # Upload test summary for display in Artifacts: https://circleci.com/docs/2.0/artifacts/
+          path: test-results
+          prefix: tests
+      - store_artifacts: # for display in Artifacts: https://circleci.com/docs/2.0/artifacts/
+          path: coverage
+          prefix: coverage
+      - store_test_results: # for display in Test Summary: https://circleci.com/docs/2.0/collect-test-data/
+          path: test-results
+      - run: # test what branch we're on. 
+          name: "What branch am I on?"
+          command: echo ${CIRCLE_BRANCH}
+  save-npm-lock:
+    steps:
+      - save_cache:
+          key: v{{ .Environment.CIRCLE_CACHE_VERSION }}-{{ arch }}-npm-lock-{{ .Branch }}-{{ .Environment.CIRCLE_JOB }}-{{ checksum "package-lock.json" }}
+          paths:
+            - node_modules
+  save-npm-cache:
+    steps:
+      - save_cache:
+          key: v{{ .Environment.CIRCLE_CACHE_VERSION }}-{{ arch }}-npm-cache-{{ .Branch }}-{{ .Environment.CIRCLE_JOB }}-{{ checksum "package-lock.json" }}
+          paths:
+            - ~/.npm/_cacache
+
+jobs:
+  # node-v10:
+  #   docker:
+  #     - image: node:10
+  #   steps:
+  #     - test-nodejs
+  # node-v12:
+  #   docker:
+  #     - image: node:12
+  #   steps:
+  #     - test-nodejs
+  # node-v14:
+  #   docker:
+  #     - image: node:14
+  #   steps:
+  #     - test-nodejs
+  node-v16:
+    docker:
+      - image: cimg/node:16.7.0 #node:16
+    working_directory: ~/project-api
+    steps:
+      - test-nodejs
+
+workflows:
+  node-multi-build:
+    jobs:
+      # - node-v10
+      # - node-v12
+      # - node-v14
+      - node-v16
+
+notify:
+  webhooks:
+    - url: https://coveralls.io/webhook?repo_token=${process.env.COVERALLS_REPO_TOKEN}

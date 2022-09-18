@@ -1,0 +1,27 @@
+{
+  "all": false,
+  "extension": [
+    ".js",
+    ".ts",
+    ".tsx"
+  ],
+  "include": [
+    "dist/**/*.js",
+    "src/**/*.ts"
+  ],
+  "exclude": [
+	"dist/lib/vendor/**",
+	"src/lib/vendor/**"
+  ],
+  "branches": 95,
+  "functions": 100,
+  "lines": 95,
+  "statements": 95,
+  "reporter": [
+    "html",
+    "text-summary"
+  ],
+  "require": [
+    "ts-node/esm"
+  ]
+}

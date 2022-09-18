@@ -1,0 +1,44 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+	  {
+		"name": "Debug Typescript Build",
+		"type": "node",
+		"request": "launch",
+		"runtimeExecutable": "node",
+		"runtimeArgs": ["--inspect", "--nolazy", "-r", "ts-node/register/transpile-only"],
+  
+		"args": ["dist/index.js", "--debug"],
+		
+		"cwd": "${workspaceRoot}",
+		"internalConsoleOptions": "openOnSessionStart",
+		"skipFiles": ["<node_internals>/**", "node_modules/**"]
+	  },
+	  {
+		"name": "Debug Typescript Source",
+		"type": "node",
+		"request": "launch",
+		"runtimeExecutable": "node",
+		"runtimeArgs": ["--inspect", "--nolazy", "-r", "ts-node/register/transpile-only"],
+  
+		"args": ["src/index.ts", "--debug"],
+		
+		"cwd": "${workspaceRoot}",
+		"internalConsoleOptions": "openOnSessionStart",
+		"skipFiles": ["<node_internals>/**", "node_modules/**"]
+	  },
+	  {
+		"name": "Debug Current Source File",
+		"type": "node",
+		"request": "launch",
+		"runtimeExecutable": "node",
+		"runtimeArgs": ["--trace-warnings", "--inspect", "--nolazy", "--loader", "ts-node/esm"],
+  
+		"args": ["${file}", "--debug"],
+		
+		"cwd": "${workspaceRoot}",
+		"internalConsoleOptions": "openOnSessionStart",
+		"skipFiles": ["<node_internals>/**", "node_modules/**"]
+	  }
+	]
+}
