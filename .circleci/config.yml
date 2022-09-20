@@ -10,9 +10,6 @@ commands:
       # Use BASH instead of DASH! see: https://ubuntuforums.org/showthread.php?t=1932504
       # - run: su apt-get install -y sudo # https://discuss.circleci.com/t/sudo-command-not-found/14208/4
       # - run: ls -al /bin/sh && sudo rm /bin/sh && sudo ln -s /bin/bash /bin/sh && ls -al /bin/sh
-      - run:
-          name: Versions
-          command: pnpm run version
       - checkout
       - restore_cache:
           keys:
@@ -20,16 +17,20 @@ commands:
             - v{{ .Environment.CIRCLE_CACHE_VERSION }}-{{ arch }}-pnpm-cache-master-{{ .Environment.CIRCLE_JOB }}
       - run:
           name: Install pnpm package manager
-          command: |
-            curl -L https://pnpm.js.org/pnpm.js | node - add --global pnpm@7
-      # - run:
-      #     name: Install dependencies
-      #     command: npm ci
+          command: sudo npm i pnpm typescript -g
+            # sudo curl -fsSL https://get.pnpm.io/install.sh | bash -
+            # sudo curl -L https://pnpm.js.org/pnpm.js | node - add --global pnpm@7
       - run:
           name: Install Dependencies
           command: |
-            pnpm install
-      - save-npm-cache
+            pnpm install --no-frozen-lockfile
+      - save-pnpm-cache
+      # - run:
+      #     name: Versions
+      #     command: pnpm run version
+      # - run:
+      #     name: Install dependencies
+      #     command: npm ci
       - run:
           name: Tests
           command: pnpm run cover:check
@@ -49,16 +50,16 @@ commands:
       - run: # test what branch we're on. 
           name: "What branch am I on?"
           command: echo ${CIRCLE_BRANCH}
-  save-npm-lock:
+  save-pnpm-lock:
     steps:
       - save_cache:
-          key: v{{ .Environment.CIRCLE_CACHE_VERSION }}-{{ arch }}-pnpm-lock-{{ .Branch }}-{{ .Environment.CIRCLE_JOB }}-{{ checksum "package-lock.json" }}
+          key: v{{ .Environment.CIRCLE_CACHE_VERSION }}-{{ arch }}-pnpm-lock-{{ .Branch }}-{{ .Environment.CIRCLE_JOB }}-{{ checksum "pnpm-lock.yaml" }}
           paths:
             - node_modules
-  save-npm-cache:
+  save-pnpm-cache:
     steps:
       - save_cache:
-          key: v{{ .Environment.CIRCLE_CACHE_VERSION }}-{{ arch }}-pnpm-cache-{{ .Branch }}-{{ .Environment.CIRCLE_JOB }}-{{ checksum "package-lock.json" }}
+          key: v{{ .Environment.CIRCLE_CACHE_VERSION }}-{{ arch }}-pnpm-cache-{{ .Branch }}-{{ .Environment.CIRCLE_JOB }}-{{ checksum "pnpm-lock.yaml" }}
           paths:
             - node_modules
 
