@@ -1,4 +1,4 @@
-import { supportsColor } from "chalk";
+import chalk, { supportsColor } from "chalk";
 import { MersenneTwister } from "./MersenneTwister.js";
 
 export const x4bitColors = [
@@ -42,19 +42,28 @@ export function isColorSupported(color: string | number) {
 
 	switch(supportsColor.level) {
 		case 1: {
-			return x4bitColors.includes(getHexColorInt(color));
-			break;
+			if (x4bitColors.includes(getHexColorInt(color))) return true;
+			else return defaultResolver();
 		}
 		case 2: {
-			return x16bitColors.includes(getHexColorInt(color));
-			break;
+			if (x16bitColors.includes(getHexColorInt(color))) return true;
+			else return defaultResolver();
 		}
 		case 3: {
-			return !Number.isNaN(getHexColorInt(color));
-			break;
+			if (!Number.isNaN(getHexColorInt(color))) return true;
+			else return defaultResolver();
 		}
-		default:
-			return false;
+		default: {
+			return defaultResolver()
+		}
+	}
+	
+	function defaultResolver() {
+		const _ColorHexCode = getHexColorInt(color).toString(16);
+		const _ColorCode = _ColorHexCode.length < 6 ? chalk.hex(`#${"0".repeat(6 - _ColorHexCode.length)}${_ColorHexCode}`) : chalk.hex(_ColorHexCode);
+
+		if (typeof _ColorCode !== "undefined") return true;
+		return false;
 	}
 }
 
